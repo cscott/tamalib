@@ -546,6 +546,26 @@ static void set_lcd(u12_t n, u4_t v)
 	u8_t i;
 	u8_t seg, com0;
 
+#if 0
+	// try to figure out if a certain register is often the last to be set
+	// EA9 and ECF are often last; largest after that is 922 cycles after
+	// last write to 0xE29 (and 2340 cycles at startup)
+	// After 922 cycles, shortest is 1141 cycles after last write to EA9
+	// EA9 shortest intervals to next write are 5,155,177,303
+	// (5 cycles is during a complete screen blank, which will touch ECF)
+	// ECF shortest intervals to next write are 1216, 1245, 1642 (3-5ms)
+	// ECF seg=39, com0=12 through 15 (last icon)
+	// EA9 seg=20, com0=12 through 15 (last LCD bit)
+	static u12_t last_set_n = 0;
+	static u32_t last_set_cycles = 0;
+	u32_t cycles_since_last = tick_counter - last_set_cycles;
+	g_hal->log(LOG_MEMORY,
+		  "CSA: %u cycles from last write to 0x%X\n",
+		  cycles_since_last, last_set_n);
+	last_set_n = n;
+	last_set_cycles = tick_counter;
+#endif
+
 	seg = ((n & 0x7F) >> 1);
 	com0 = (((n & 0x80) >> 7) * 8 + (n & 0x1) * 4);
 
@@ -1613,7 +1633,11 @@ static void process_interrupts(void)
 	/* Process interrupts in priority order */
 	for (i = 0; i < INT_SLOT_NUM; i++) {
 		if (interrupts[i].triggered) {
-			//printf("IT %u !\n", i);
+#if 0
+			if (g_hal->is_log_enabled(LOG_CPU)) {
+				g_hal->log(LOG_CPU, "IT %u !\n", i);
+			}
+#endif
 			SET_M(sp - 1, PCP);
 			SET_M(sp - 2, PCSH);
 			SET_M(sp - 3, PCSL);
