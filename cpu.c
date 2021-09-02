@@ -349,7 +349,8 @@ static u4_t get_io(u12_t n)
 
 		case 0xF73:
 			/* SVD */
-			return memory[n] & 0x7; // Voltage always OK
+			return (memory[n] & 0x7) |
+				(((memory[n] & 0x4) && hw_is_battery_low()) ? 0x8 : 0x0);
 
 		case 0xF74:
 			/* Buzzer config 1 */
@@ -457,7 +458,8 @@ static void set_io(u12_t n, u4_t v)
 			break;
 
 		case 0xF73:
-			/* SVD */
+			/* SVD: first writes 0x6 (SVD circuit on, SVD voltage 3.1)
+			* then reads the SVD, then writes 0 (SVD circuit off) */
 			/* Assume battery voltage always OK (0x6) */
 			break;
 

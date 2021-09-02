@@ -137,3 +137,11 @@ void hw_enable_buzzer(bool_t en)
 {
 	g_hal->play_frequency(en);
 }
+
+bool_t hw_is_battery_low(void) {
+	if (g_hal->is_battery_low) {
+		return g_hal->is_battery_low();
+	} else {
+		return 0; /* battery is fine */
+	}
+}

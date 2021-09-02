@@ -78,6 +78,9 @@ typedef struct {
 	void (*set_frequency)(u32_t freq);
 	void (*play_frequency)(bool_t en);
 
+	/* Battery management */
+	bool_t (*is_battery_low)(void);
+
 	/* Event handler from the main app (if any)
 	 * NOTE: This function usually handles button related events, states loading/saving ...
 	 */
